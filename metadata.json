@@ -1,0 +1,8 @@
+{
+  "name": "RecallOps - AI Incident Response Assistant",
+  "description": "Incident-response assistant that remembers previous problems, failed fixes, and successful resolutions with verifiable Hindsight evidence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
