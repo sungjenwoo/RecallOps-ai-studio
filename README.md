@@ -1,60 +1,67 @@
-# RecallOps: AI Incident-Response Assistant with Persistent Hindsight
+# RecallOps
 
-> **Advisory SRE incident-response assistant that remembers previous problems, failed fixes, and successful resolutions—so engineers don't have to start from zero each time.**
+> **The incident-response teammate that remembers what went wrong last time.**
 
-RecallOps solves the acute challenge faced by on-call engineers, IT operations, and reliability teams: when critical services (like checkout, auth, or databases) fail, incident knowledge usually sits trapped in old tickets or scattered notes. 
+RecallOps helps on-call engineers respond to production outages without repeating old mistakes. An engineer describes what is broken, RecallOps searches the team’s past incident memory through **Hindsight**, warns about fixes that previously made an outage worse, and suggests safe read-only checks before any production change.
 
-RecallOps retrieves that historical experience via **Hindsight**, correlates symptoms, and synthesizes an **evidence-based investigation plan** with verifiable references `[E1]`, safe read-only checks, and explicit warnings against previously failed actions.
+## The problem in simple words
 
----
+During an outage, engineers are under pressure. The same mistakes happen again because the useful context is hidden in old tickets and postmortems. A generic AI can suggest a plausible fix, but it does not know what failed in **this team’s** systems before.
 
-## Key Capabilities
+## What makes RecallOps different
 
-1. **Active Incident Analysis**:
-   - Ingests symptoms, stack traces, affected service, severity (`SEV1`-`SEV3`), and recent deployments.
-   - Includes 5 labelled synthetic scenarios for 1-click evaluation (Checkout 504 pool starvation, Redis auth connection leak, Stripe 429 rate limit storm, PostgreSQL read replica lag, and Cold Start).
+- **It remembers real incidents:** past symptoms, root causes, failed actions, successful fixes, and lessons.
+- **It makes memory visible:** every matched precedent is shown as clickable evidence such as `[E1]`.
+- **It prevents repeat mistakes:** the plan clearly says what not to do when a previous action made an outage worse.
+- **It starts safely:** the first recommendations are read-only checks, not automatic production changes.
+- **It learns from the team:** after an incident is resolved, a human can save the confirmed outcome. That lesson becomes available to future responders without retraining the model.
 
-2. **Verifiable Evidence Inspector `[E1]`, `[E2]`, `[E3]`**:
-   - Every recommendation references historical precedent. Responders can click any `[E#]` citation to inspect the verified postmortem, past failed actions, and winning resolution.
+## 60-second judge demo
 
-3. **Anti-Pattern Warnings (What NOT to do)**:
-   - Identifies past failed actions that worsened outages (e.g., warning: *"DO NOT blindly restart checkout pods—in Incident [E1], restarting triggered a 1,200 connection thundering herd to PostgreSQL and delayed recovery by 45 minutes"*).
+1. Open the **Incident console**. The page explains the product in one sentence: *Don’t debug the same outage twice.*
+2. Click **Find the safest next step** on the preloaded Checkout 504 scenario.
+3. Point out **Memory found** and the `[E1]` evidence card: RecallOps found a similar past incident.
+4. Point out **Do not make it worse**: the previous incident proves that blindly restarting pods caused a larger database outage.
+5. Point out **Check before you change anything**: the assistant gives copyable read-only checks first.
+6. Open **Why memory matters** to compare generic AI advice with the Hindsight-backed response.
+7. Optionally click **Save the lesson** to show the feedback loop.
 
-4. **Safe Read-Only Diagnostic Checks**:
-   - Provides concrete bash/SQL commands with copy-to-clipboard buttons, explaining why each check must be performed before touching production.
+## Architecture
 
-5. **Human-Confirmed Outcome Feedback Loop**:
-   - Responders record confirmed root causes, failed attempts, and winning fixes into the Hindsight Memory Bank.
-   - Newly learned lessons immediately inform future incident triage without model retraining.
+```text
+Incident details
+      ↓
+Hindsight memory retrieval
+      ↓
+Evidence-backed plan + failed-action warnings
+      ↓
+Human-confirmed outcome
+      ↓
+New searchable team memory
+```
 
-6. **Hindsight Impact Lab (Before vs. After Demonstration)**:
-   - Controlled comparative evaluation demonstrating how naive LLM advice (e.g. recommending pod restarts) causes catastrophic downtime, whereas Hindsight-equipped RecallOps steers engineers away from traps and toward verified fixes.
+The app includes a resilient local analytical engine for the demo, seeded with realistic synthetic incidents. If a Gemini key is configured, the server can also synthesize a structured response using the retrieved evidence. The assistant is advisory only and never mutates production.
 
-7. **Hackathon Submission & Judge Checklist**:
-   - Live audit panel verifying all 8 deliverables from the project brief.
-
----
-
-## Architectural Principles
-
-- **Advisory AI Only**: Never mutates production, restarts pods, or drops database tables autonomously.
-- **Dynamic Persistent Memory vs. Retraining**: The model's recommendations change because it receives relevant stored experience from Hindsight, avoiding costly and slow weight fine-tuning.
-- **Hypothesis Labeling**: Unsupported inferences are strictly labelled as hypotheses (`High`, `Medium`, `Low` confidence) paired with read-only verification steps.
-
----
-
-## Local Development & Setup
+## Run locally
 
 ```bash
-# Install dependencies
-npm install
-
-# Start development server
+npm install --legacy-peer-deps
 npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
 ```
+
+Open `http://localhost:3000`.
+
+For a production client build:
+
+```bash
+npm run lint
+npm run build
+```
+
+## Hackathon alignment
+
+- **Innovation:** turns postmortems into a live safety layer for incident response.
+- **Use of Hindsight:** persistent memory is central to retrieval, warnings, evidence, and future improvement.
+- **Technical implementation:** React + TypeScript client, Express API, structured incident memory, deterministic fallback, and optional Gemini synthesis.
+- **User experience:** a guided scenario can be demonstrated in under one minute.
+- **Real-world impact:** helps SRE and operations teams reduce repeated mistakes during high-pressure outages.
